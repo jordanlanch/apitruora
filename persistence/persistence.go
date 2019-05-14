@@ -25,6 +25,18 @@ func SetupDB() *gorm.DB {
 	return db
 }
 
+func SetupDB_Test() *gorm.DB {
+	db, err := gorm.Open("sqlite3", "/tmp/test.db")
+	if err != nil {
+		panic(fmt.Sprintf("failed to connect to database: %v", err))
+	}
+
+	// Migrate the schema
+	db.AutoMigrate(&dbmodels.Response{}, &dbmodels.Servers{})
+
+	return db
+}
+
 func CreateResponse(db  *gorm.DB,response *dbmodels.Response) (*dbmodels.Response, error){
 	if err := db.Create(&response).Error; err != nil {
 		return nil, err

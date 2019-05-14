@@ -84,7 +84,7 @@ func parseData(apiServerModel *models.ApiServerResponse) *dbmodels.Response{
 		sort.Strings(grade)
 		resp.SslGrade = grade[len(grade)-1]
 	}
-	resp.Logo = getLogo()
+	resp.Logo, _ = getLogo()
 	resp.IsDown = apiServerModel.Status != "READY"
 	resp.CreatedAt = time.Now().UTC()
 	return &resp
@@ -105,10 +105,10 @@ func getWhoIs(ip string)(string,string){
 	return "", ""
 }
 
-func getLogo() string{
+func getLogo() (string,error){
 	resp, err := soup.Get("https://www.truora.com")
 	if err != nil {
-		return ""
+		return "Error Get",err
 	}
 	doc := soup.HTMLParse(resp)
 	links := doc.FindAll("link")
@@ -116,9 +116,9 @@ func getLogo() string{
 	for _, link := range links {
 		if link.Attrs()["type"] == "image/x-icon" {
 			img =link.Attrs()["href"]
-			return img
+			return img,nil
 		}
 	}
-	return img
+	return img,nil
 }
 
