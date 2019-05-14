@@ -15,11 +15,11 @@ var Err = log.New(os.Stderr,
 func Error(err error) {
 	pc, fn, line, _ := runtime.Caller(1)
 	if err != nil {
-		Err.Printf("labtracking - in %s[%s:%d] %v", runtime.FuncForPC(pc).Name(), fn, line, err)
+		Err.Printf("apitruora - in %s[%s:%d] %v", runtime.FuncForPC(pc).Name(), fn, line, err)
 	}
 }
 
 // PrintMsg func for print message
 func PrintMsg(title, a interface{}) {
-	log.Printf("labtracking - %v: %#v ", title, a)
+	log.Printf("apitruora - %v: %#v ", title, a)
 }
