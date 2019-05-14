@@ -6,10 +6,9 @@ import (
 	"net/url"
 	"time"
 	"sort"
-	"fmt"
+
 	"github.com/anaskhan96/soup"
 	"github.com/jinzhu/gorm"
-
 	"../models"
 	"../dbmodels"
 	"../persistence"
@@ -39,18 +38,23 @@ func GetDataAPIServer(db  *gorm.DB, domain string) (*dbmodels.Response, error) {
 		return nil, err
 	}
 	responseAPI := parseData(&apiServerModel)
-	
-	apiResponseList := dbmodels.Response{}
-	db.Preload("Servers").Order("created_at desc").Find(&apiResponseList)
-	if responseAPI.SslGrade == apiResponseList.SslGrade && responseAPI.IsDown == apiResponseList.IsDown {
+	now := time.Now()
+	then := now.Add(time.Duration(-1) * time.Hour)
+	apiResponseList := []dbmodels.Response{}
+	db.Preload("Servers").Where("created_at > ?", then).Order("created_at desc").Find(&apiResponseList)
+	for i := 0; i < len(apiResponseList); i++ {
+		if i ==0{
+			responseAPI.PreviousSslGrade = apiResponseList[i].SslGrade
+		}
+		if responseAPI.SslGrade != apiResponseList[i].SslGrade && responseAPI.IsDown != apiResponseList[i].IsDown {
+			 responseAPI.ServersChanged = true
+			 break
+		}
 		responseAPI.ServersChanged = false
-		}else{
-			responseAPI.ServersChanged = true
+	
+		
 
 	}
-	fmt.Println("| oldApiResponse :\n", responseAPI)
-	fmt.Println("| apiResponseList :\n", apiResponseList)
-	//save dataBase
 
 	persistence.CreateResponse(db, responseAPI)
 
@@ -73,12 +77,10 @@ func parseData(apiServerModel *models.ApiServerResponse) *dbmodels.Response{
 	}
 	resp := dbmodels.Response{}
 	resp.Servers =servers
-	resp.ServersChanged = isChange()
 	if len(grade) > 0 {
 		sort.Strings(grade)
 		resp.SslGrade = grade[len(grade)-1]
 	}
-	resp.PreviousSslGrade = getPreviousSslGrade(resp.SslGrade)
 	resp.Logo = getLogo()
 	resp.IsDown = apiServerModel.Status != "READY"
 	resp.CreatedAt = time.Now().UTC()
@@ -100,13 +102,5 @@ func getLogo() string{
 		}
 	}
 	return img
-}
-
-func getPreviousSslGrade(sslGrade string) string{
-	return "E"
-}
-
-func isChange()bool{
-	return true
 }
 

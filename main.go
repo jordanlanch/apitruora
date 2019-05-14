@@ -9,7 +9,6 @@ import (
 
 	"./server"
 	"./persistence"
-
 	"github.com/gorilla/mux"
 )
 var (
@@ -29,7 +28,6 @@ func main() {
 func GetServerByDomain(w http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	domain := vars["domain"]
-	//validate DB < 1h insert
 	db := persistence.SetupDB()
 	defer db.Close()
 
