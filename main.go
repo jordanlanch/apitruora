@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"encoding/json"
+
+	"./server"
+	"./persistence"
 
 	"github.com/gorilla/mux"
-	"./persistence"
 )
-
+var (
+	Err      = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime)
+)
 func main() {
-	// DB connection
-	db, err := persistence.MigrateDB()
-	if err != nil {
-		log.Fatal(err)
-	}
 	// Router
 	router := mux.NewRouter()
 
@@ -24,18 +25,38 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
-// GetCassandraTrackerRegisterByPlate endpoint to read data filter by plate
+// GetServerByDomain endpoint to read data filter by domain
 func GetServerByDomain(w http.ResponseWriter, request *http.Request) {
-	params := mux.Vars(request)
-	plate := params["domain"]
-	trackerData, err := storecassandra.GetTrackingByPlate(plate)
+	vars := mux.Vars(request)
+	domain := vars["domain"]
+	//validate DB < 1h insert
+	db := persistence.SetupDB()
+	defer db.Close()
+
+	response, err := server.GetDataAPIServer(db, domain)
+
 	if err != nil {
 		sendInternalServerError(err, w)
 	}
-	jsonData, err := json.Marshal(trackerData)
+	jsonData, err := json.Marshal(response)
 	if err != nil {
 		sendInternalServerError(err, w)
 	}
 	sendOkResponse(jsonData, w)
 
+}
+
+func sendBadServerError(err error, w http.ResponseWriter) {
+	Err.Printf("ApiTruora - in %v", err)
+	http.Error(w, err.Error(), http.StatusBadRequest)
+}
+func sendInternalServerError(err error, w http.ResponseWriter) {
+	Err.Printf("ApiTruora - in %v", err)
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+}
+
+func sendOkResponse(jsonData []byte, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
 }

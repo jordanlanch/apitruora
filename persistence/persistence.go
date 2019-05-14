@@ -1,61 +1,34 @@
 package persistence
 
 import (
-	"errors"
-	"log"
-	"os"
-	"time"
+	"fmt"
+
+	"../dbmodels"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" //for use postgres
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   //for use sqlite at tests
 )
 
-var (
-	ErrDBConnection = errors.New("failed to connect database")
-)
+const addr = "postgresql://root@localhost:26257/apitruora?sslmode=disable"
 
-//ConnectToDB func that create a DB connection
-func ConnectToDB() (*gorm.DB, error) {
-	db, err := gorm.Open(os.Getenv("DATABASE_TYPE"), os.Getenv("DATABASE_URL"))
-	return db, err
-}
 
-//CleanDB data base
-func CleanDB() {
-	db, err := ConnectToDB()
+func SetupDB() *gorm.DB {
+	db, err := gorm.Open("postgres", addr)
 	if err != nil {
-		log.Fatal(ErrDBConnection)
-	}
-	db.Exec("drop table server;")
-	defer db.Close()
-}
-
-//MigrateDB database
-func MigrateDB() (*gorm.DB, error) {
-	db, err := ConnectToDB()
-
-	if err != nil {
-		utils.Error(err)
-		panic(ErrDBConnection)
+		panic(fmt.Sprintf("failed to connect to database: %v", err))
 	}
 
-	db.AutoMigrate(Server{})
-	return db, err
+	// Migrate the schema
+	db.AutoMigrate(&dbmodels.Response{}, &dbmodels.Servers{})
+
+	return db
 }
 
-type Model struct {
-	ID        uint       `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time  `json:"created_at"`
-	DeletedAt *time.Time `json:"-"`
-}
-
-// Server db struct
-type Server struct {
-	Model
-	VIN        string `gorm:"type:varchar(30);unique_index" json:"vin"`
-	Plate      string `gorm:"not null" json:"plate"`
-	Status     string `gorm:"not null" json:"status"`
-	WebhookURL string `gorm:"not null" json:"webhook_url"`
-	Active     bool   `gorm:"not null;default:true" json:"active"`
+func CreateResponse(db  *gorm.DB,response *dbmodels.Response) (*dbmodels.Response, error){
+	if err := db.Create(&response).Error; err != nil {
+		return nil, err
+	} 
+		return response, nil
+	
 }
