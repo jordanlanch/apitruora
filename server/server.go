@@ -6,7 +6,10 @@ import (
 	"net/url"
 	"time"
 	"sort"
-
+    "regexp"
+    "strings"
+	
+    "github.com/likexian/whois-go"
 	"github.com/anaskhan96/soup"
 	"github.com/jinzhu/gorm"
 	"../models"
@@ -70,9 +73,9 @@ func parseData(apiServerModel *models.ApiServerResponse) *dbmodels.Response{
 		server.Address=enpoints[i].IPAddress
 		server.SslGrade=enpoints[i].Grade
 		server.CreatedAt = time.Now().UTC()
+		server.Country,server.Owner = getWhoIs(enpoints[i].IPAddress)
 		servers = append(servers,server)
 		grade = append(grade,enpoints[i].Grade)
-		//TODO find whois Country Owner
 
 	}
 	resp := dbmodels.Response{}
@@ -85,6 +88,21 @@ func parseData(apiServerModel *models.ApiServerResponse) *dbmodels.Response{
 	resp.IsDown = apiServerModel.Status != "READY"
 	resp.CreatedAt = time.Now().UTC()
 	return &resp
+}
+func getWhoIs(ip string)(string,string){
+	result, err := whois.Whois(ip)
+    var re = regexp.MustCompile(`.*Organization.*`)
+    var re2 = regexp.MustCompile(`.*Country.*`)
+    if err == nil {
+        matches := re.FindStringSubmatch(result)
+        organization := strings.Split(matches[0], ":")
+        
+        matches2 := re2.FindStringSubmatch(result)
+        country := strings.Split(matches2[0], ":")
+		
+		return strings.TrimSpace(country[1]), strings.TrimSpace(organization[1])
+    }
+	return "", ""
 }
 
 func getLogo() string{
