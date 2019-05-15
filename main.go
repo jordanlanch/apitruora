@@ -9,25 +9,25 @@ import (
 
 	"./server"
 	"./persistence"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 var (
 	Err      = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime)
 )
 func main() {
-	// Router
-	router := mux.NewRouter()
-
-	router.HandleFunc("/server/{domain}", GetServerByDomain).Methods("GET")
+	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
+	r.Get("/server/{domain}", GetServerByDomain)
 
 	fmt.Println("Starting server on port 8000...")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(":8000", r))
 }
 
 // GetServerByDomain endpoint to read data filter by domain
 func GetServerByDomain(w http.ResponseWriter, request *http.Request) {
-	vars := mux.Vars(request)
-	domain := vars["domain"]
+	domain := chi.URLParam(request, "domain") // from a route like /users/{userID}
 	db := persistence.SetupDB()
 	defer db.Close()
 
