@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"time"
 	"sort"
+	"os"
     "regexp"
     "strings"
 	
@@ -22,7 +23,7 @@ import (
 
 //GetDataAPIServer return ListProviders from Bogota Address
 func GetDataAPIServer(db  *gorm.DB, domain string) (*dbmodels.Response, error) {
-	urlAPIServer, err := url.Parse("https://api.ssllabs.com/api/v3/analyze")
+	urlAPIServer, err := url.Parse(os.Getenv("URL_APISERVER"))
 	if err != nil {
 		return nil, err
 	}
