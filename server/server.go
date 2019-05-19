@@ -41,7 +41,7 @@ func GetDataAPIServer(db  *gorm.DB, domain string) (*dbmodels.Response, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&apiServerModel); err != nil {
 		return nil, err
 	}
-	responseAPI := parseData(&apiServerModel)
+	responseAPI := parseData(&apiServerModel, domain)
 	now := time.Now()
 	then := now.Add(time.Duration(-1) * time.Hour)
 	apiResponseList := []dbmodels.Response{}
@@ -59,13 +59,30 @@ func GetDataAPIServer(db  *gorm.DB, domain string) (*dbmodels.Response, error) {
 		
 
 	}
+	Items := dbmodels.Items{}
+	Items.Domain = domain
+	responses := []dbmodels.Response{}
+	responses = append(responses,*responseAPI)
+	Items.Response  = responses
 
-	persistence.CreateResponse(db, responseAPI)
+	_, err = persistence.CreateItems(db, &Items)
+	if err != nil {
+		return nil, err  
+	}
 
 	return responseAPI, nil
 }
+// GetItems get all Data
+func GetItems(db *gorm.DB) (*[]dbmodels.Items, error) {
+	var Items = []dbmodels.Items{}
+	var dbResult = db.Set("gorm:auto_preload", true).Find(&Items)
+	if dbResult.Error != nil {
+		return nil, dbResult.Error
+	}
+	return &Items, nil
+}
 
-func parseData(apiServerModel *models.ApiServerResponse) *dbmodels.Response{
+func parseData(apiServerModel *models.ApiServerResponse,domain string) *dbmodels.Response{
 	enpoints := apiServerModel.Endpoints
 	servers := []dbmodels.Servers{}
 	server := dbmodels.Servers{}
@@ -85,7 +102,7 @@ func parseData(apiServerModel *models.ApiServerResponse) *dbmodels.Response{
 		sort.Strings(grade)
 		resp.SslGrade = grade[len(grade)-1]
 	}
-	resp.Logo, _ = getLogo()
+	resp.Logo, resp.Title, _ = getLogoAndTitle(domain)
 	resp.IsDown = apiServerModel.Status != "READY"
 	resp.CreatedAt = time.Now().UTC()
 	return &resp
@@ -106,20 +123,25 @@ func getWhoIs(ip string)(string,string){
 	return "", ""
 }
 
-func getLogo() (string,error){
-	resp, err := soup.Get("https://www.truora.com")
+func getLogoAndTitle(domain string) (string,string,error){
+	resp, err := soup.Get("https://www."+domain)
 	if err != nil {
-		return "Error Get",err
+		return "Error Get Logo","Error Get Title",err
 	}
 	doc := soup.HTMLParse(resp)
 	links := doc.FindAll("link")
-	img := ""
+	img,title := "",""
 	for _, link := range links {
 		if link.Attrs()["type"] == "image/x-icon" {
 			img =link.Attrs()["href"]
-			return img,nil
 		}
 	}
-	return img,nil
+	titleFind := doc.FindAll("title")
+	for i, t := range titleFind {
+		if i == 0{
+			title=t.Text()
+		}
+	}
+	return img,title,nil
 }
 

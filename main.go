@@ -20,6 +20,7 @@ func main() {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Get("/server/{domain}", GetServerByDomain)
+	r.Get("/servers", GetServers)
 
 	fmt.Println("Starting server on port 8000...")
 	log.Fatal(http.ListenAndServe(":8000", r))
@@ -27,11 +28,28 @@ func main() {
 
 // GetServerByDomain endpoint to read data filter by domain
 func GetServerByDomain(w http.ResponseWriter, request *http.Request) {
-	domain := chi.URLParam(request, "domain") // from a route like /users/{userID}
+	domain := chi.URLParam(request, "domain")
 	db := persistence.SetupDB()
 	defer db.Close()
 
 	response, err := server.GetDataAPIServer(db, domain)
+
+	if err != nil {
+		sendInternalServerError(err, w)
+	}
+	jsonData, err := json.Marshal(response)
+	if err != nil {
+		sendInternalServerError(err, w)
+	}
+	sendOkResponse(jsonData, w)
+
+}
+// GetServers return all searchs
+func GetServers(w http.ResponseWriter, request *http.Request) {
+	db := persistence.SetupDB()
+	defer db.Close()
+
+	response, err := server.GetItems(db)
 
 	if err != nil {
 		sendInternalServerError(err, w)

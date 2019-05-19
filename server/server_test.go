@@ -11,6 +11,7 @@ import (
 func TestBuild(t *testing.T) {
 	os.Setenv("URL_DB", os.Getenv("URL_DB_TEST"))
 	os.Setenv("DB", os.Getenv("DB_TEST"))
+	persistence.CleanDB()
 	db := persistence.SetupDB()
 	defer db.Close()
 
@@ -18,7 +19,7 @@ func TestBuild(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_getLogo(t *testing.T) {
-	_, err := getLogo()
+func Test_getLogoAndTitle(t *testing.T) {
+	_,_, err := getLogoAndTitle()
 	assert.Nil(t, err)
 }

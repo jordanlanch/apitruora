@@ -24,4 +24,3 @@ type Endpoints    struct {
 	Duration          int    `json:"duration"`
 	Delegation        int    `json:"delegation"`
 } 
-
