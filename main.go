@@ -21,6 +21,9 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Get("/server/{domain}", GetServerByDomain)
 	r.Get("/servers", GetServers)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "index.html")
+	})
 
 	fmt.Println("Starting server on port 8000...")
 	log.Fatal(http.ListenAndServe(":8000", r))

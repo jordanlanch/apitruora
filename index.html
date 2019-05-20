@@ -6,15 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>ApiTruora</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
     <div id="app">
         <form @submit.prevent="submit" action="" method="get">
             <input type="text" name="domain" v-model="domain" placeholder="Ingresa tu domain" id="domain">
-            <button type="submit">Enviar</button>
-
-            <input type="text" v-model="info" name="info">
+            <button type="submit" :disabled="loading">{{loading?'Cargando...':'Enviar'}}</button>
+            <table class="table" v-if="show">
+                <thead>
+                    <tr>
+                        <th scope="col">Logo</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Is Down</th>
+                        <th scope="col">Previous SSL Grade</th>
+                        <th scope="col">Server Change</th>
+                        <th scope="col">SSL Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><img :src="info.logo" /></th>
+                        <td>{{info.title}}</td>
+                        <td>{{info.is_down}}</td>
+                        <td>{{info.previous_ssl_grade}}</td>
+                        <td>{{info.servers_changed}}</td>
+                        <td>{{info.ssl_grade}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table" v-if="show">
+                <thead>
+                    <tr>
+                        <th scope="col">Adress</th>
+                        <th scope="col">Country</th>
+                        <th scope="col">SSL Grade</th>
+                        <th scope="col">Owner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="server in info.servers">
+                        <td>{{server.address}}</td>
+                        <td>{{server.country}}</td>
+                        <td>{{server.ssl_grade}}</td>
+                        <td>{{server.owner}}</td>
+                    </tr>
+                </tbody>
+            </table>
         </form>
     </div>
     <script src="https://unpkg.com/vue"></script>
@@ -23,29 +62,27 @@
             el: '#app',
             data: {
                 domain: '',
-                info: null
+                info: {},
+                show: false,
+                loading: false
             },
             methods: {
                 submit: function() {
+                    this.loading = true
                     const self = this
                     servers = fetch('http://localhost:8000/server/' + this.domain, {
-                            mode: 'no-cors',
-                            method: 'GET',
-                            credentials: "same-origin", //include, same-origin
-                            headers: {
-                                Accept: 'application/json',
-                                'Content-Type': 'application/json',
-                            },
-                        }).then(function(response) {
-                            return response.json();
+                        method: 'GET'
+                    }).then((response) => {
+                        response.json().then((jsonResponse) => {
+                            this.info = jsonResponse
+                            this.show = true
+                            console.log(jsonResponse)
                         })
-                        .then(function(json) {
-                            this.info = json
-                            console.log('Request successful', json);
-                        })
-                        .catch(function(error) {
-                            log('Request failed', error)
-                        });
+                    }).catch((err) => {
+                        console.log(`Error: ${err}`)
+                    }).finally(() => {
+                        this.loading = false;
+                    });
                     console.log('Se ejecuta el método submit')
                     console.log(self.servers)
                 }
