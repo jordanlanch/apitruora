@@ -12,7 +12,10 @@
 <body>
     <div id="app">
         <form @submit.prevent="submit" action="" method="get">
-            <input type="text" name="domain" v-model="domain" placeholder="Ingresa tu domain" id="domain">
+            <label>Ingresa el Dominio que quieres Buscar...
+                    Ejemplos(truora.com, google.com)</label>
+            <br/>
+            <input type="text" name="domain" v-model="domain" placeholder="Ingresa tu Dominio" id="domain">
             <button type="submit" :disabled="loading">{{loading?'Cargando...':'Enviar'}}</button>
             <table class="table" v-if="show">
                 <thead>
