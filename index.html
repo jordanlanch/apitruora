@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ApiTruora</title>
+</head>
+
+<body>
+    <div id="app">
+        <form @submit.prevent="submit" action="" method="get">
+            <input type="text" name="domain" v-model="domain" placeholder="Ingresa tu domain" id="domain">
+            <button type="submit">Enviar</button>
+
+            <input type="text" v-model="info" name="info">
+        </form>
+    </div>
+    <script src="https://unpkg.com/vue"></script>
+    <script type="text/javascript">
+        let app = new Vue({
+            el: '#app',
+            data: {
+                domain: '',
+                info: null
+            },
+            methods: {
+                submit: function() {
+                    const self = this
+                    servers = fetch('http://localhost:8000/server/' + this.domain, {
+                            mode: 'no-cors',
+                            method: 'GET',
+                            credentials: "same-origin", //include, same-origin
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                        }).then(function(response) {
+                            return response.json();
+                        })
+                        .then(function(json) {
+                            this.info = json
+                            console.log('Request successful', json);
+                        })
+                        .catch(function(error) {
+                            log('Request failed', error)
+                        });
+                    console.log('Se ejecuta el método submit')
+                    console.log(self.servers)
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
