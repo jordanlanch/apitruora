@@ -10,54 +10,128 @@
 </head>
 
 <body>
-    <div id="app">
-        <form @submit.prevent="submit" action="" method="get">
-            <label>Ingresa el Dominio que quieres Buscar...
-                    Ejemplos(truora.com, google.com)</label>
-            <br/>
-            <input type="text" name="domain" v-model="domain" placeholder="Ingresa tu Dominio" id="domain">
-            <button type="submit" :disabled="loading">{{loading?'Cargando...':'Enviar'}}</button>
-            <table class="table" v-if="show">
-                <thead>
-                    <tr>
-                        <th scope="col">Logo</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Is Down</th>
-                        <th scope="col">Previous SSL Grade</th>
-                        <th scope="col">Server Change</th>
-                        <th scope="col">SSL Grade</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th scope="row"><img :src="info.logo" /></th>
-                        <td>{{info.title}}</td>
-                        <td>{{info.is_down}}</td>
-                        <td>{{info.previous_ssl_grade}}</td>
-                        <td>{{info.servers_changed}}</td>
-                        <td>{{info.ssl_grade}}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <table class="table" v-if="show">
-                <thead>
-                    <tr>
-                        <th scope="col">Adress</th>
-                        <th scope="col">Country</th>
-                        <th scope="col">SSL Grade</th>
-                        <th scope="col">Owner</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="server in info.servers">
-                        <td>{{server.address}}</td>
-                        <td>{{server.country}}</td>
-                        <td>{{server.ssl_grade}}</td>
-                        <td>{{server.owner}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
+    <div id="app" style="display:flex;flex-direction: column">
+        <label>Ingresa el Dominio que quieres Buscar...
+                Ejemplos(truora.com, google.com)</label>
+        <br/>
+        <div style="display:flex;">
+            <form @submit.prevent="submit" action="" method="get">
+                <input type="text" name="domain" v-model="domain" placeholder="Ingresa tu Dominio" id="domain" required="true">
+                <button type="submit" :disabled="loading">{{loading?'Cargando...':'Enviar'}}</button>
+                <table class="table" v-if="show">
+                    <thead>
+                        <tr>
+                            <th scope="col">Logo</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Is Down</th>
+                            <th scope="col">Previous SSL Grade</th>
+                            <th scope="col">Server Change</th>
+                            <th scope="col">SSL Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row"><img :src="info.logo" /></th>
+                            <td>{{info.title}}</td>
+                            <td>{{info.is_down}}</td>
+                            <td>{{info.previous_ssl_grade}}</td>
+                            <td>{{info.servers_changed}}</td>
+                            <td>{{info.ssl_grade}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table" v-if="show">
+                    <thead>
+                        <tr>
+                            <th scope="col">Adress</th>
+                            <th scope="col">Country</th>
+                            <th scope="col">SSL Grade</th>
+                            <th scope="col">Owner</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="server in info.servers">
+                            <td>{{server.address}}</td>
+                            <td>{{server.country}}</td>
+                            <td>{{server.ssl_grade}}</td>
+                            <td>{{server.owner}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+            <form @submit.prevent="items" action="" method="get">
+                <button type="submit" :disabled="loadingAll">{{loadingAll?'Cargando...':'Historia'}}</button>
+            </form>
+        </div>
+
+        <template v-for='template in history'>
+                    <table class="table" v-if="showAll">
+                        <thead>
+                            <tr>
+                                <th scope="col">Domain</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{template.domain}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <template v-for='dataResp in template.response'>
+                        <table class="table" v-if="showAll">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Logo</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Is Down</th>
+                                    <th scope="col">Previous SSL
+                                        Grade
+                                    </th>
+                                    <th scope="col">Server
+                                        Change</th>
+                                    <th scope="col">SSL Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row"><img
+                                            :src="dataResp.logo"
+                                            /></th>
+                                    <td>{{dataResp.title}}</td>
+                                    <td>{{dataResp.is_down}}</td>
+                                    <td>{{dataResp.previous_ssl_grade}}</td>
+                                    <td>{{dataResp.servers_changed}}</td>
+                                    <td>{{dataResp.ssl_grade}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                            <table class="table" v-if="showAll">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Adress</th>
+                                        <th scope="col">Country</th>
+                                        <th scope="col">SSL Grade</th>
+                                        <th scope="col">Owner</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="server in dataResp.servers">
+                                        <td>{{server.address}}</td>
+                                        <td>{{server.country}}</td>
+                                        <td>{{server.ssl_grade}}</td>
+                                        <td>{{server.owner}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+        <br/>
+        </template>
+
+
+
     </div>
     <script src="https://unpkg.com/vue"></script>
     <script type="text/javascript">
@@ -67,27 +141,44 @@
                 domain: '',
                 info: {},
                 show: false,
-                loading: false
+                loading: false,
+                showAll: false,
+                loadingAll: false,
+                history: [{}]
             },
             methods: {
                 submit: function() {
                     this.loading = true
-                    const self = this
-                    servers = fetch('http://localhost:8000/server/' + this.domain, {
+                    fetch('http://localhost:8000/server/' + this.domain, {
                         method: 'GET'
                     }).then((response) => {
                         response.json().then((jsonResponse) => {
                             this.info = jsonResponse
                             this.show = true
-                            console.log(jsonResponse)
+                            this.showAll = false
                         })
                     }).catch((err) => {
                         console.log(`Error: ${err}`)
                     }).finally(() => {
                         this.loading = false;
                     });
-                    console.log('Se ejecuta el método submit')
-                    console.log(self.servers)
+                },
+                items: function() {
+                    this.loadingAll = true
+                    fetch('http://localhost:8000/servers', {
+                        method: 'GET'
+                    }).then((response) => {
+                        response.json().then((jsonResponse) => {
+                            this.history = jsonResponse
+                            this.show = false
+                            this.showAll = true
+                            console.log(jsonResponse)
+                        })
+                    }).catch((err) => {
+                        console.log(`Error: ${err}`)
+                    }).finally(() => {
+                        this.loadingAll = false;
+                    });
                 }
             }
         })

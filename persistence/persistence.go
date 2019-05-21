@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"../dbmodels"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" //for use postgres
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   //for use sqlite at tests

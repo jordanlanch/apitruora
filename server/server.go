@@ -9,7 +9,7 @@ import (
 	"os"
     "regexp"
     "strings"
-	
+
     "github.com/likexian/whois-go"
 	"github.com/anaskhan96/soup"
 	"github.com/jinzhu/gorm"
@@ -75,7 +75,7 @@ func GetDataAPIServer(db  *gorm.DB, domain string) (*dbmodels.Response, error) {
 // GetItems get all Data
 func GetItems(db *gorm.DB) (*[]dbmodels.Items, error) {
 	var Items = []dbmodels.Items{}
-	var dbResult = db.Set("gorm:auto_preload", true).Find(&Items)
+	var dbResult = db.Set("gorm:auto_preload", true).Find(&Items).Order("created_at desc")
 	if dbResult.Error != nil {
 		return nil, dbResult.Error
 	}

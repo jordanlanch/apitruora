@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 
 	"./server"
+	"./utils"
 	"./persistence"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -16,6 +17,12 @@ var (
 	Err      = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime)
 )
 func main() {
+    // Enviroment variables validation
+	err := utils.ValidateEnvVars()
+	if err != nil {
+		log.Fatal(err)
+	}
+		
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
