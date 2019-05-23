@@ -16,7 +16,7 @@ func TestValidateEnvVars(t *testing.T) {
 	assert.Equal(t, errEnvURLAPI, ValidateEnvVars())
 	os.Setenv("URL_APISERVER", URL_APISERVER)
 
-	RABBITURL_DB_PATH := os.Getenv("URL_DB")
+	URL_DB := os.Getenv("URL_DB")
 	os.Setenv("URL_DB", "")
 	assert.Equal(t, errEnvURLDB, ValidateEnvVars())
 	os.Setenv("URL_DB", URL_DB)

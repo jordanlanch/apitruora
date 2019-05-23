@@ -20,6 +20,6 @@ func TestBuild(t *testing.T) {
 }
 
 func Test_getLogoAndTitle(t *testing.T) {
-	_,_, err := getLogoAndTitle()
+	_,_, err := getLogoAndTitle("truora.com")
 	assert.Nil(t, err)
 }
